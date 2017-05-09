@@ -44,7 +44,8 @@ def dumps(value, bytes_io=None):
             dict_bytes_io.write(key.encode('utf8'))
             dumps(value[key], dict_bytes_io)
         
-        size = dict_bytes_io.tell()
+        # Calculate container size + 3 bytes for: type, container size and key/value pairs
+        size = dict_bytes_io.tell() + 3
 
         # Store container size
         bytes_io.write(_int_to_bytes(size))
