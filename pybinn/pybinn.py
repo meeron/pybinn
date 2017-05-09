@@ -6,6 +6,8 @@ BINN_OBJECT = b'\xe2'
 BINN_STRING = b'\xa0'
 
 def _int_to_bytes(value):
+    if value > 127:
+        return (value | 0x80000000).to_bytes(4,'big')
     return value.to_bytes(1, 'big')
 
 def dumps(value, bytes_io=None):
@@ -44,8 +46,12 @@ def dumps(value, bytes_io=None):
             dict_bytes_io.write(key.encode('utf8'))
             dumps(value[key], dict_bytes_io)
         
-        # Calculate container size + 3 bytes for: type, container size and key/value pairs
+        # Calculate container size + 3 bytes for: type, container size and key/value pairs        
         size = dict_bytes_io.tell() + 3
+        if count > 127:
+            size += 3
+        if size > 127:
+            size += 3
 
         # Store container size
         bytes_io.write(_int_to_bytes(size))
