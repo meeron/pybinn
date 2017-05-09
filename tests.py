@@ -4,10 +4,13 @@ from pybinn import pybinn
 
 class PyBinnEncodeTests(unittest.TestCase):
 
-    def test_encode_simple_dict(self):
-        data = { 'hello': "world" }
-        encoded_data = pybinn.dumps(data)        
-        self.assertEqual(b'\xe2\x11\x01\x05hello\xa0\x05world\x00', encoded_data)
+    def test_str(self):
+        test_str = "test"
+        self.assertEqual(test_str, pybinn.loads(pybinn.dumps(test_str)))
+        
+    def test_str_long(self):
+        test_str_long = ",".join(["test"] * 100)
+        self.assertEqual(test_str_long, pybinn.loads(pybinn.dumps(test_str_long)))
 
 if __name__ == '__main__':
     unittest.main()

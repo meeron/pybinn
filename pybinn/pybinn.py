@@ -5,64 +5,57 @@ BINN_OBJECT = b'\xe2'
 
 BINN_STRING = b'\xa0'
 
-def _int_to_bytes(value):
-    if value > 127:
-        return (value | 0x80000000).to_bytes(4,'big')
-    return value.to_bytes(1, 'big')
+class _Encoder(object):
+    def __init__(self):
+        self._buffer = io.BytesIO()
 
-def dumps(value, bytes_io=None):
-    value_type = type(value)
-    size = 0
-    count = 0
+    def encode(self, value):
+        self._encode(value)
+        return self._buffer.getvalue()
 
-    # String
-    if value_type is str:
+    def _encode(self, value):
+        value_type = type(value)
+        if value_type is str:
+            self._encode_str(value)
+
+    def _encode_str(self, value):
         size = len(value.encode('utf8'))
-        # Store the type
-        bytes_io.write(BINN_STRING)
-        # Store the size
-        bytes_io.write(_int_to_bytes(size))
-        # Store the string
-        bytes_io.write(value.encode('utf8') + b'\0')        
+        self._buffer.write(BINN_STRING)
+        self._buffer.write(self._to_varint(size))
+        self._buffer.write(value.encode('utf8') + b'\0')
+
+    def _to_varint(self, value):
+        if value > 127:
+            return (value | 0x80000000).to_bytes(4,'big')
+        return value.to_bytes(1, 'big')
+
+class _Decoder(object):
+    def __init__(self, buffer):
+        self._buffer = io.BytesIO(buffer)
+
+    def decode(self):
+        type = self._buffer.read(1)
+        if type == BINN_STRING:
+            return self._decode_str()
         return None
 
-    # Dictionary
-    if value_type is dict:
+    def _decode_str(self):
+        size = self._from_varint()
+        value = str(self._buffer.read(size), 'utf8')
+        # Ready null terminator byte to advance position
+        self._buffer.read(1)
+        return value
 
-        dict_bytes_io = io.BytesIO()
-        bytes_io = io.BytesIO()
-
-        # Store the dict type
-        bytes_io.write(BINN_OBJECT)
-
-        count = len(value)
-
-        for key in value:
-            # Store the key
-            size = len(key.encode('utf8'))
-            if size > 255:
-                raise OverflowError("Key '{}' is to long".format(key))
-            dict_bytes_io.write(_int_to_bytes(size))
-            dict_bytes_io.write(key.encode('utf8'))
-            dumps(value[key], dict_bytes_io)
-        
-        # Calculate container size + 3 bytes for: type, container size and key/value pairs        
-        size = dict_bytes_io.tell() + 3
-        if count > 127:
-            size += 3
-        if size > 127:
-            size += 3
-
-        # Store container size
-        bytes_io.write(_int_to_bytes(size))
-        # Store key/value pairs
-        bytes_io.write(_int_to_bytes(count))
-        # Store content
-        bytes_io.write(dict_bytes_io.getvalue())
-
-        return bytes_io.getvalue()
-
-    raise NotImplementedError("Not supported type: {}".format(value_type))
+    def _from_varint(self):
+        value = int.from_bytes(self._buffer.read(1), 'big')
+        if value & 0x80:
+            self._buffer.seek(self._buffer.tell() - 1)
+            value = int.from_bytes(self._buffer.read(4), 'big')
+            value &= 0x7FFFFFFF
+        return value
+    
+def dumps(value):
+    return _Encoder().encode(value)
 
 def loads(buffer):
-    return None
+    return _Decoder(buffer).decode()
