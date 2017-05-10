@@ -96,8 +96,8 @@ class _Encoder(object):
 
     def _to_varint(self, value):
         if value > 127:
-            return (value | 0x80000000).to_bytes(4,'big')
-        return value.to_bytes(1, 'big')
+            return pack('>I', value | 0x80000000)
+        return pack('B', value)
 
 class _Decoder(object):
     def __init__(self, buffer):
@@ -137,10 +137,10 @@ class _Decoder(object):
         return value
 
     def _from_varint(self):
-        value = int.from_bytes(self._buffer.read(1), 'big')
+        value = unpack('B', self._buffer.read(1))[0]
         if value & 0x80:
             self._buffer.seek(self._buffer.tell() - 1)
-            value = int.from_bytes(self._buffer.read(4), 'big')
+            value = unpack('>I', self._buffer.read(4))[0]
             value &= 0x7FFFFFFF
         return value
     
