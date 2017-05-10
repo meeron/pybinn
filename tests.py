@@ -38,6 +38,10 @@ class PyBinnEncodeTests(unittest.TestCase):
         self.assertEqual(test_true, pybinn.loads(pybinn.dumps(test_true)))
         self.assertEqual(test_false, pybinn.loads(pybinn.dumps(test_false)))
 
+    def test_None(self):
+        test_None = None
+        
+        self.assertEqual(test_None, pybinn.loads(pybinn.dumps(test_None)))
 
 if __name__ == '__main__':
     unittest.main()

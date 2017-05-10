@@ -6,6 +6,7 @@ BINN_OBJECT = b'\xe2'
 
 BINN_STRING = b'\xa0'
 
+BINN_NULL   = b'\x00'
 BINN_TRUE   = b'\x01'
 BINN_FALSE  = b'\x02'
 
@@ -29,12 +30,19 @@ class _Encoder(object):
 
     def _encode(self, value):
         value_type = type(value)
+        if value_type == type(None):
+            self._buffer.write(BINN_NULL)
+            return
         if value_type is str:
             self._encode_str(value)
+            return
         if value_type is int:
             self._encode_int(value)
+            return
         if value_type is bool:
             self._encode_bool(value)
+            return
+        raise TypeError("Invalid type for encode: {}".format(value_type))
 
     def _encode_str(self, value):
         size = len(value.encode('utf8'))
@@ -127,7 +135,9 @@ class _Decoder(object):
             return True
         if type == BINN_FALSE:
             return False
-        return None
+        if type == BINN_NULL:
+            return None
+        raise TypeError("Invalid Binn data format: {}".format(type))
 
     def _decode_str(self):
         size = self._from_varint()
