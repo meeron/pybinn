@@ -6,6 +6,10 @@ BINN_OBJECT = b'\xe2'
 
 BINN_STRING = b'\xa0'
 
+BINN_TRUE   = b'\x01'
+BINN_FALSE  = b'\x02'
+
+
 BINN_UINT8  = b'\x20'
 BINN_INT8   = b'\x21'
 BINN_UINT16 = b'\x40'
@@ -29,6 +33,8 @@ class _Encoder(object):
             self._encode_str(value)
         if value_type is int:
             self._encode_int(value)
+        if value_type is bool:
+            self._encode_bool(value)
 
     def _encode_str(self, value):
         size = len(value.encode('utf8'))
@@ -82,6 +88,12 @@ class _Encoder(object):
             self._buffer.write(BINN_INT64)
             self._buffer.write(pack('l', value))
 
+    def _encode_bool(self, value):
+        if value:
+            self._buffer.write(BINN_TRUE)
+        if not value:
+            self._buffer.write(BINN_FALSE)
+
     def _to_varint(self, value):
         if value > 127:
             return (value | 0x80000000).to_bytes(4,'big')
@@ -111,6 +123,10 @@ class _Decoder(object):
             return unpack('L', self._buffer.read(8))[0]
         if type == BINN_INT64:
             return unpack('l', self._buffer.read(8))[0]
+        if type == BINN_TRUE:
+            return True
+        if type == BINN_FALSE:
+            return False
         return None
 
     def _decode_str(self):
