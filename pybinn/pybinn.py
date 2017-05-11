@@ -2,23 +2,23 @@ import io
 from struct import pack, unpack
 
 # Data Formats
-BINN_OBJECT = b'\xe2'
+BINN_OBJECT     = b'\xe2'
 
-BINN_STRING = b'\xa0'
+BINN_STRING     = b'\xa0'
 
-BINN_NULL   = b'\x00'
-BINN_TRUE   = b'\x01'
-BINN_FALSE  = b'\x02'
+BINN_NULL       = b'\x00'
+BINN_TRUE       = b'\x01'
+BINN_FALSE      = b'\x02'
 
-
-BINN_UINT8  = b'\x20'
-BINN_INT8   = b'\x21'
-BINN_UINT16 = b'\x40'
-BINN_INT16  = b'\x41'
-BINN_UINT32 = b'\x60'
-BINN_INT32  = b'\x61'
-BINN_UINT64 = b'\x80'
-BINN_INT64  = b'\x81'
+BINN_UINT8      = b'\x20'
+BINN_INT8       = b'\x21'
+BINN_UINT16     = b'\x40'
+BINN_INT16      = b'\x41'
+BINN_UINT32     = b'\x60'
+BINN_INT32      = b'\x61'
+BINN_UINT64     = b'\x80'
+BINN_INT64      = b'\x81'
+BINN_FLOAT64    = b'\x82'
 
 class _Encoder(object):
     def __init__(self):
@@ -41,6 +41,9 @@ class _Encoder(object):
             return
         if value_type is bool:
             self._encode_bool(value)
+            return
+        if value_type is float:
+            self._encode_float(value)
             return
         raise TypeError("Invalid type for encode: {}".format(value_type))
 
@@ -102,6 +105,10 @@ class _Encoder(object):
         if not value:
             self._buffer.write(BINN_FALSE)
 
+    def _encode_float(self, value):
+        self._buffer.write(BINN_FLOAT64)
+        self._buffer.write(pack('d', value))
+
     def _to_varint(self, value):
         if value > 127:
             return pack('>I', value | 0x80000000)
@@ -131,6 +138,8 @@ class _Decoder(object):
             return unpack('L', self._buffer.read(8))[0]
         if type == BINN_INT64:
             return unpack('l', self._buffer.read(8))[0]
+        if type == BINN_FLOAT64:
+            return unpack('d', self._buffer.read(8))[0]
         if type == BINN_TRUE:
             return True
         if type == BINN_FALSE:

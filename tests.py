@@ -43,5 +43,10 @@ class PyBinnEncodeTests(unittest.TestCase):
         
         self.assertEqual(test_None, pybinn.loads(pybinn.dumps(test_None)))
 
+    def test_float(self):
+        test_float = 9999999.9999999
+
+        self.assertEqual(test_float, pybinn.loads(pybinn.dumps(test_float)))
+
 if __name__ == '__main__':
     unittest.main()
