@@ -5,6 +5,7 @@ from struct import pack, unpack
 BINN_OBJECT     = b'\xe2'
 
 BINN_STRING     = b'\xa0'
+BINN_BLOB       = b'\xc0'
 
 BINN_NULL       = b'\x00'
 BINN_TRUE       = b'\x01'
@@ -44,6 +45,9 @@ class _Encoder(object):
             return
         if value_type is float:
             self._encode_float(value)
+            return
+        if value_type is bytes:
+            self._encode_bytes(value)
             return
         raise TypeError("Invalid type for encode: {}".format(value_type))
 
@@ -109,6 +113,11 @@ class _Encoder(object):
         self._buffer.write(BINN_FLOAT64)
         self._buffer.write(pack('d', value))
 
+    def _encode_bytes(self, value):
+        self._buffer.write(BINN_BLOB)
+        self._buffer.write(pack('I', len(value)))
+        self._buffer.write(value)
+
     def _to_varint(self, value):
         if value > 127:
             return pack('>I', value | 0x80000000)
@@ -140,6 +149,8 @@ class _Decoder(object):
             return unpack('l', self._buffer.read(8))[0]
         if type == BINN_FLOAT64:
             return unpack('d', self._buffer.read(8))[0]
+        if type == BINN_BLOB:
+            return self._decode_bytes()
         if type == BINN_TRUE:
             return True
         if type == BINN_FALSE:
@@ -154,6 +165,10 @@ class _Decoder(object):
         # Ready null terminator byte to advance position
         self._buffer.read(1)
         return value
+
+    def _decode_bytes(self):
+        size = unpack('I', self._buffer.read(4))[0]
+        return self._buffer.read(size)
 
     def _from_varint(self):
         value = unpack('B', self._buffer.read(1))[0]

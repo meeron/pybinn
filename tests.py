@@ -48,5 +48,10 @@ class PyBinnEncodeTests(unittest.TestCase):
 
         self.assertEqual(test_float, pybinn.loads(pybinn.dumps(test_float)))
 
+    def test_bytes(self):
+        test_bytes = "some test string".encode('utf8')
+
+        self.assertEqual(test_bytes, pybinn.loads(pybinn.dumps(test_bytes)))
+
 if __name__ == '__main__':
     unittest.main()
