@@ -1,10 +1,14 @@
-import io
+import io, time
 from struct import pack, unpack
+
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 # Data Formats
 BINN_OBJECT     = b'\xe2'
 
 BINN_STRING     = b'\xa0'
+BINN_DATETIME   = b'\xa1' # in DATETIME_FORMAT format
+
 BINN_BLOB       = b'\xc0'
 
 BINN_NULL       = b'\x00'
@@ -49,11 +53,14 @@ class _Encoder(object):
         if value_type is bytes:
             self._encode_bytes(value)
             return
+        if value_type is time.struct_time:
+            self._encode_time(value)
+            return
         raise TypeError("Invalid type for encode: {}".format(value_type))
 
-    def _encode_str(self, value):
+    def _encode_str(self, value, data_type=BINN_STRING):
         size = len(value.encode('utf8'))
-        self._buffer.write(BINN_STRING)
+        self._buffer.write(data_type)
         self._buffer.write(self._to_varint(size))
         self._buffer.write(value.encode('utf8') + b'\0')
 
@@ -63,7 +70,7 @@ class _Encoder(object):
             self._buffer.write(BINN_UINT8)
             self._buffer.write(pack('B', value))
             return
-        # unsigned short
+# unsigned short
         if value < 0x10000:
             self._buffer.write(BINN_UINT16)
             self._buffer.write(pack('H', value))
@@ -118,6 +125,10 @@ class _Encoder(object):
         self._buffer.write(pack('I', len(value)))
         self._buffer.write(value)
 
+    def _encode_time(self, value):
+        time_str = time.strftime(DATETIME_FORMAT, value)
+        self._encode_str(time_str, BINN_DATETIME)
+
     def _to_varint(self, value):
         if value > 127:
             return pack('>I', value | 0x80000000)
@@ -151,6 +162,8 @@ class _Decoder(object):
             return unpack('d', self._buffer.read(8))[0]
         if type == BINN_BLOB:
             return self._decode_bytes()
+        if type == BINN_DATETIME:
+            return self._decode_time()
         if type == BINN_TRUE:
             return True
         if type == BINN_FALSE:
@@ -169,6 +182,12 @@ class _Decoder(object):
     def _decode_bytes(self):
         size = unpack('I', self._buffer.read(4))[0]
         return self._buffer.read(size)
+
+    def _decode_time(self):
+        time_str = self._decode_str()
+        # decode time in UTC timezone
+        time_str += "+GMT"
+        return time.strptime(time_str, DATETIME_FORMAT + "+%Z")
 
     def _from_varint(self):
         value = unpack('B', self._buffer.read(1))[0]

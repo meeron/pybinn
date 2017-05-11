@@ -1,5 +1,4 @@
-import unittest
-import sys
+import unittest, sys, time
 
 from pybinn import pybinn
 
@@ -52,6 +51,11 @@ class PyBinnEncodeTests(unittest.TestCase):
         test_bytes = "some test string".encode('utf8')
 
         self.assertEqual(test_bytes, pybinn.loads(pybinn.dumps(test_bytes)))
+
+    def test_time(self):
+        test_time = time.gmtime()
+
+        self.assertEqual(test_time, pybinn.loads(pybinn.dumps(test_time)))
 
 if __name__ == '__main__':
     unittest.main()
