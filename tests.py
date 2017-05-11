@@ -57,5 +57,10 @@ class PyBinnEncodeTests(unittest.TestCase):
 
         self.assertEqual(test_time, pybinn.loads(pybinn.dumps(test_time)))
 
+    def test_colletion(self):
+        test_array = [66, "test", [1,2,3,4,5], time.time(), -234234]
+
+        self.assertEqual(test_array, pybinn.loads(pybinn.dumps(test_array)))
+        
 if __name__ == '__main__':
     unittest.main()
