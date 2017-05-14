@@ -60,6 +60,9 @@ class _Encoder(object):
         if value_type is list:
             self._encode_list(value)
             return
+        if value_type is dict:
+            self._encode_dict(value)
+            return
         raise TypeError("Invalid type for encode: {}".format(value_type))
 
     def _encode_str(self, value, data_type=BINN_STRING):
@@ -143,6 +146,21 @@ class _Encoder(object):
             self._buffer.write(self._to_varint(len(value)))
             self._buffer.write(buffer.getvalue())
 
+    def _encode_dict(self, value):
+        with io.BytesIO() as buffer:
+            for key in value:
+                if len(key) > 255:
+                    raise OverflowError("Key '{}' is to big. Max length is 255.".format(key))
+                buffer.write(pack('B', len(key)))
+                buffer.write(key.encode('utf8'))        
+                buffer.write(_Encoder().encode(value[key]))
+
+            self._buffer.write(BINN_OBJECT)        
+            self._buffer.write(self._to_varint(buffer.tell() + 3))
+            self._buffer.write(self._to_varint(len(value)))
+            self._buffer.write(buffer.getvalue())
+
+
     def _to_varint(self, value):
         if value > 127:
             return pack('>I', value | 0x80000000)
@@ -180,6 +198,8 @@ class _Decoder(object):
             return self._decode_time()
         if type == BINN_LIST:
             return self._decode_list()
+        if type == BINN_OBJECT:
+            return self._decode_dict()
         if type == BINN_TRUE:
             return True
         if type == BINN_FALSE:
@@ -212,6 +232,16 @@ class _Decoder(object):
         for i in range(count):
             result.append(self.decode())
         return result
+
+    def _decode_dict(self):         
+        size = self._from_varint()
+        count = self._from_varint()
+        result = {}
+        for i in range(count):
+            key_size = unpack('B', self._buffer.read(1))[0] 
+            key = str(self._buffer.read(key_size), 'utf8')
+            result[key] = self.decode()
+        return result        
 
     def _from_varint(self):
         value = unpack('B', self._buffer.read(1))[0]
