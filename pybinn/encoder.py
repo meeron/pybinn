@@ -119,29 +119,26 @@ class BINNEncoder(object):
         self._encode_str(time_str, types.BINN_DATETIME)
 
     def _encode_list(self, value):
-        with BytesIO() as buffer:
-            for item in value:
-                buffer.write(BINNEncoder().encode(item))
+        # TOOD: write proper size
+        self._buffer.write(types.BINN_LIST)
+        self._buffer.write(self._to_varint(0))
+        self._buffer.write(self._to_varint(len(value)))
 
-            self._buffer.write(types.BINN_LIST)
-            self._buffer.write(self._to_varint(buffer.tell() + 3))
-            self._buffer.write(self._to_varint(len(value)))
-            self._buffer.write(buffer.getvalue())
+        for item in value:
+            self._encode(item)
 
     def _encode_dict(self, value):
-        with BytesIO() as buffer:
-            for key in value:
-                if len(key) > 255:
-                    raise OverflowError("Key '{}' is to big. Max length is 255.".format(key))
-                buffer.write(pack('B', len(key)))
-                buffer.write(key.encode('utf8'))
-                buffer.write(BINNEncoder().encode(value[key]))
+        self._buffer.write(types.BINN_OBJECT)
+        # TOOD: write proper size
+        self._buffer.write(self._to_varint(0))
+        self._buffer.write(self._to_varint(len(value)))
 
-            self._buffer.write(types.BINN_OBJECT)
-            self._buffer.write(self._to_varint(buffer.tell() + 3))
-            self._buffer.write(self._to_varint(len(value)))
-            self._buffer.write(buffer.getvalue())
-
+        for key in value:
+            if len(key) > 255:
+                raise OverflowError("Key '{}' is to big. Max length is 255.".format(key))
+            self._buffer.write(pack('B', len(key)))
+            self._buffer.write(key.encode('utf8'))
+            self._encode(value[key])
 
     def _to_varint(self, value):
         if value > 127:
