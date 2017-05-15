@@ -52,7 +52,7 @@ class BINNDecoder(object):
 
     def _decode_str(self):
         size = self._from_varint()
-        value = str(self._buffer.read(size), 'utf8')
+        value = self._buffer.read(size).decode('utf8')
         # Ready null terminator byte to advance position
         self._buffer.read(1)
         return value
@@ -83,7 +83,7 @@ class BINNDecoder(object):
         result = {}
         for i in range(count):
             key_size = unpack('B', self._buffer.read(1))[0]
-            key = str(self._buffer.read(key_size), 'utf8')
+            key = self._buffer.read(key_size).decode('utf8')
             result[key] = self.decode()
         return result
 
