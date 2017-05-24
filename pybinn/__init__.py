@@ -12,9 +12,9 @@ from .encoder import BINNEncoder
 from .decoder import BINNDecoder
 
 def dumps(value):
-    """Serialize ``value`` to BINN data"""
+    """Serialize ``value`` to BINN format and returns bytes"""
     return BINNEncoder().encode(value)
 
 def loads(buffer):
-    """Deserialize buffer to object"""
+    """Deserialize buffer in BINN format and return object"""
     return BINNDecoder(buffer).decode()
