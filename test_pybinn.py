@@ -1,12 +1,14 @@
 from time import gmtime
+from io import BytesIO
 
 import pybinn
 
 class TestPyBinn:
     """PyBinn tests"""
-    def test_encode_decode(self):
-        """Test encoding and decoding"""
-        test = [
+    
+    def setup_method(self, method):
+        """Setup method"""
+        self._test = [
             True, False, None,
             gmtime(),
             0, 1, -1, 2, -2, 4, -4, 6, -6,
@@ -23,4 +25,14 @@ class TestPyBinn:
             [1, 2, 3], [], {'name': "Miron", 'age': 32}, {},
             {'a': 1, 'b': 2, 'c': [1, 2, 3]}
         ]
-        assert test == pybinn.loads(pybinn.dumps(test))
+
+    def test_encode_decode(self):
+        """Test encoding and decoding"""
+        assert self._test == pybinn.loads(pybinn.dumps(self._test))
+
+    def test_encode_decode_using_stream(self):
+        with BytesIO() as fp:
+            pybinn.dump(self._test, fp)
+            fp.seek(0)
+            deserialized_obj = pybinn.load(fp)
+            assert self._test == deserialized_obj

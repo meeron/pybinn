@@ -8,15 +8,18 @@ import pybinn.datatypes as types
 
 class BINNEncoder(object):
     """BINN <https://github.com/liteserver/binn> encoder for Python"""
-    def __init__(self):
-        self._buffer = BytesIO()
+    def __init__(self, fp=None):
+        self._buffer = fp
+        if not self._buffer:
+            self._buffer = BytesIO()
 
-    def encode(self, value):
-        """Encode value"""
-        self._encode(value)
+    def encode_bytes(self, value):
+        """Encode value and return bytes"""
+        self.encode(value)
         return self._buffer.getvalue()
 
-    def _encode(self, value):
+    def encode(self, value):
+        """Encode value to stream"""
         value_type = type(value)
         if value_type == type(None):
             self._buffer.write(types.BINN_NULL)
@@ -121,7 +124,7 @@ class BINNEncoder(object):
     def _encode_list(self, value):
         with BytesIO() as buffer:
             for item in value:
-                buffer.write(BINNEncoder().encode(item))
+                buffer.write(BINNEncoder().encode_bytes(item))
 
             self._buffer.write(types.BINN_LIST)
             self._buffer.write(self._to_varint(buffer.tell() + 3))
@@ -135,7 +138,7 @@ class BINNEncoder(object):
                     raise OverflowError("Key '{}' is to big. Max length is 255.".format(key))
                 buffer.write(pack('B', len(key)))
                 buffer.write(key.encode('utf8'))
-                buffer.write(BINNEncoder().encode(value[key]))
+                buffer.write(BINNEncoder().encode_bytes(value[key]))
 
             self._buffer.write(types.BINN_OBJECT)
             self._buffer.write(self._to_varint(buffer.tell() + 3))

@@ -8,8 +8,11 @@ import pybinn.datatypes as types
 
 class BINNDecoder(object):
     """BINN <https://github.com/liteserver/binn> decoder for Python"""
-    def __init__(self, buffer):
-        self._buffer = io.BytesIO(buffer)
+    def __init__(self, buffer=None, fp=None):
+        if buffer:
+            self._buffer = io.BytesIO(buffer)
+        if fp:
+            self._buffer = fp
 
     def decode(self):
         """Decode date from buffer"""
