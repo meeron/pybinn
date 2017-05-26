@@ -3,8 +3,9 @@
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 # Data Formats
-BINN_OBJECT = b'\xe2'
 BINN_LIST = b'\xe0'
+BINN_MAP = b'\xe1'
+BINN_OBJECT = b'\xe2'
 
 BINN_STRING = b'\xa0'
 BINN_DATETIME = b'\xa1' # in DATETIME_FORMAT format

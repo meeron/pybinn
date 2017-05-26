@@ -23,13 +23,14 @@ class TestPyBinn:
             1.1, 0.1, -0.02,
             "hello", "world", "Hello".encode('utf8'), "World".encode('utf8'),
             [1, 2, 3], [], {'name': "Miron", 'age': 32}, {},
-            {'a': 1, 'b': 2, 'c': [1, 2, 3]}
+            {'a': 1, 'b': 2, 'c': [1, 2, 3]},
+            {1: "test1", 2: "test2", 3: "test3"}
         ]
 
     def test_encode_decode(self):
         """Test encoding and decoding"""
         assert self._test == pybinn.loads(pybinn.dumps(self._test))
-
+    
     def test_encode_decode_using_stream(self):
         with BytesIO() as fp:
             pybinn.dump(self._test, fp)

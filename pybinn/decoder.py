@@ -43,15 +43,15 @@ class BINNDecoder(object):
             return self._decode_time()
         if binntype == types.BINN_LIST:
             return self._decode_list()
-        if binntype == types.BINN_OBJECT:
-            return self._decode_dict()
+        if binntype == types.BINN_OBJECT or binntype == types.BINN_MAP:
+            return self._decode_dict(binntype)
         if binntype == types.BINN_TRUE:
             return True
         if binntype == types.BINN_FALSE:
             return False
         if binntype == types.BINN_NULL:
             return None
-        raise TypeError("Invalid Binn data format: {}".format(type))
+        raise TypeError("Invalid Binn data format: {}".format(binntype))
 
     def _decode_str(self):
         size = self._from_varint()
@@ -79,14 +79,17 @@ class BINNDecoder(object):
             result.append(self.decode())
         return result
 
-    def _decode_dict(self):
+    def _decode_dict(self, binntype):
         # read container size
         self._from_varint()
         count = self._from_varint()
         result = {}
         for i in range(count):
-            key_size = unpack('B', self._buffer.read(1))[0]
-            key = self._buffer.read(key_size).decode('utf8')
+            if binntype == types.BINN_OBJECT:
+                key_size = unpack('B', self._buffer.read(1))[0]
+                key = self._buffer.read(key_size).decode('utf8')
+            if binntype == types.BINN_MAP:
+                key = unpack('I', self._buffer.read(4))[0]
             result[key] = self.decode()
         return result
 

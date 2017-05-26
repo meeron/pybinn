@@ -132,20 +132,32 @@ class BINNEncoder(object):
             self._buffer.write(buffer.getvalue())
 
     def _encode_dict(self, value):
+        # set initial BINN type to handle empty dictionaries
+        container_type = types.BINN_OBJECT
+
         with BytesIO() as buffer:
             for key in value:
-                if len(key) > 255:
-                    raise OverflowError("Key '{}' is to big. Max length is 255.".format(key))
-                buffer.write(pack('B', len(key)))
-                buffer.write(key.encode('utf8'))
-                buffer.write(BINNEncoder().encode_bytes(value[key]))
+                key_type = type(key)
 
-            self._buffer.write(types.BINN_OBJECT)
+                if key_type is str:
+                    if len(key) > 255:
+                        raise OverflowError("Key '{}' is to big. Max length is 255.".format(key))
+                    buffer.write(pack('B', len(key)))
+                    buffer.write(key.encode('utf8'))
+                    buffer.write(BINNEncoder().encode_bytes(value[key]))
+                elif key_type is int:
+                    container_type = types.BINN_MAP
+                    buffer.write(pack('I', key))
+                    buffer.write(BINNEncoder().encode_bytes(value[key]))
+                else:
+                    msg = "Cannot serialize dictionary with key of type '{}'".format(type(key))
+                    raise TypeError(msg)
+
+            self._buffer.write(container_type)
             self._buffer.write(self._to_varint(buffer.tell() + 3))
             self._buffer.write(self._to_varint(len(value)))
             self._buffer.write(buffer.getvalue())
-
-
+    
     def _to_varint(self, value):
         if value > 127:
             return pack('>I', value | 0x80000000)
