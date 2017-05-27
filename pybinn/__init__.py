@@ -16,14 +16,14 @@ def dumps(value, *custom_encoders):
     """Serialize ``value`` to BINN format and returns bytes"""
     return BINNEncoder(None, *custom_encoders).encode_bytes(value)
 
-def dump(value, fp):
+def dump(value, fp, *custom_encoders):
     """Serialize ``value`` to BINN format and saves bytes to stream ``fp``"""
-    BINNEncoder(fp).encode(value)
+    BINNEncoder(fp, *custom_encoders).encode(value)
 
 def loads(buffer, *custom_decoders):
     """Deserialize buffer in BINN format and return object"""
     return BINNDecoder(buffer, None, *custom_decoders).decode()
 
-def load(fp):
+def load(fp, *custom_decoders):
     """Deserialize stream and return object"""
-    return BINNDecoder(None, fp).decode()
+    return BINNDecoder(None, fp, *custom_decoders).decode()
