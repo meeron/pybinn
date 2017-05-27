@@ -8,10 +8,12 @@ import pybinn.datatypes as types
 
 class BINNEncoder(object):
     """BINN <https://github.com/liteserver/binn> encoder for Python"""
-    def __init__(self, fp=None):
+    
+    def __init__(self, fp=None, *custom_encoders):
         self._buffer = fp
         if not self._buffer:
             self._buffer = BytesIO()
+        self._custom_encoders = custom_encoders
 
     def encode_bytes(self, value):
         """Encode value and return bytes"""
@@ -47,6 +49,14 @@ class BINNEncoder(object):
         if isinstance(value, dict):
             self._encode_dict(value)
             return
+        # try use custom encoders when none type was recognized
+        for encoder in self._custom_encoders:
+            if not issubclass(type(encoder), CustomEncoder):
+                raise TypeError("Type {} is not CustomerEncoder.".format(type(encoder)))
+            if isinstance(value, encoder.type):
+                self._encode_custom_type(value, encoder)
+                return
+
         raise TypeError("Invalid type for encode: {}".format(type(value)))
 
     def _encode_str(self, value, data_type=types.BINN_STRING):
@@ -154,8 +164,29 @@ class BINNEncoder(object):
             self._buffer.write(self._to_varint(buffer.tell() + 3))
             self._buffer.write(self._to_varint(len(value)))
             self._buffer.write(buffer.getvalue())
+
+    def _encode_custom_type(self, value, encoder):
+        data = encoder.getbytes(value)
+        self._buffer.write(encoder.datatype)
+        self._buffer.write(self._to_varint(len(data)))
+        self._buffer.write(data)
     
     def _to_varint(self, value):
         if value > 127:
             return pack('>I', value | 0x80000000)
         return pack('B', value)
+
+class CustomEncoder(object):
+    """Base class for handling encoding user types"""
+
+    def __init__(self, usr_type, datatype):
+        # if custom data type is not BINN type
+        if datatype in types.ALL:
+            raise Exception("Datatype {} is defined as BINN type.".format(datatype))
+
+        self.type = usr_type
+        self.datatype = datatype
+
+    def getbytes(self, value):
+        """Encode instance of custom type"""
+        raise NotImplementedError()

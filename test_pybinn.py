@@ -37,3 +37,28 @@ class TestPyBinn:
             fp.seek(0)
             deserialized_obj = pybinn.load(fp)
             assert self._test == deserialized_obj
+
+    def test_encode_decode_user_type(self):
+        mock = MockObj("test")
+        decoded_mock = pybinn.loads(pybinn.dumps(mock, MockObjEncoder()), MockObjDecoder())
+        assert mock.name == decoded_mock.name
+
+class MockObj:
+    DATATYPE = b'\xe3'
+
+    def __init__(self, name):
+        self.name = name
+
+class MockObjEncoder(pybinn.CustomEncoder):
+    def __init__(self):
+        super().__init__(MockObj, MockObj.DATATYPE)
+
+    def getbytes(self, value):
+        return value.name.encode('utf8')
+
+class MockObjDecoder(pybinn.CustomDecoder):
+    def __init__(self):
+        super().__init__(MockObj.DATATYPE)
+
+    def getobject(self, data_bytes):
+        return MockObj(data_bytes.decode('utf'))

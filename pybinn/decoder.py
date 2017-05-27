@@ -8,11 +8,13 @@ import pybinn.datatypes as types
 
 class BINNDecoder(object):
     """BINN <https://github.com/liteserver/binn> decoder for Python"""
-    def __init__(self, buffer=None, fp=None):
+    
+    def __init__(self, buffer=None, fp=None, *custom_decoders):
         if buffer:
             self._buffer = io.BytesIO(buffer)
         if fp:
             self._buffer = fp
+        self._custom_decoders = custom_decoders
 
     def decode(self):
         """Decode date from buffer"""
@@ -51,6 +53,13 @@ class BINNDecoder(object):
             return False
         if binntype == types.BINN_NULL:
             return None
+        # if type was not found, try using custom decoders
+        for decoder in self._custom_decoders:
+            if not issubclass(type(decoder), CustomDecoder):
+                raise TypeError("Type {} is not CustomDecoder.")
+            if binntype == decoder.datatype:
+                return self._decode_custom_type(decoder)
+
         raise TypeError("Invalid Binn data format: {}".format(binntype))
 
     def _decode_str(self):
@@ -93,6 +102,10 @@ class BINNDecoder(object):
             result[key] = self.decode()
         return result
 
+    def _decode_custom_type(self, decoder):
+        size = self._from_varint()
+        return decoder.getobject(self._buffer.read(size))
+
     def _from_varint(self):
         value = unpack('B', self._buffer.read(1))[0]
         if value & 0x80:
@@ -100,3 +113,17 @@ class BINNDecoder(object):
             value = unpack('>I', self._buffer.read(4))[0]
             value &= 0x7FFFFFFF
         return value
+
+class CustomDecoder(object):
+    """Base class for handling decoding user types"""
+
+    def __init__(self, datatype):
+        # check if custom data type is not BINN type
+        if datatype in types.ALL:
+            raise Exception("Datatype {} is defined as BINN type.".format(datatype))
+
+        self.datatype = datatype
+
+    def getobject(self, data_bytes):
+        """Decode object from bytes"""
+        raise NotImplementedError()
