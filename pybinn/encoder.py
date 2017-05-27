@@ -20,35 +20,34 @@ class BINNEncoder(object):
 
     def encode(self, value):
         """Encode value to stream"""
-        value_type = type(value)
-        if value_type == type(None):
+        if value is None:
             self._buffer.write(types.BINN_NULL)
             return
-        if value_type is str:
+        if isinstance(value, str):
             self._encode_str(value)
             return
-        if value_type is int:
+        if isinstance(value, int):
             self._encode_int(value)
             return
-        if value_type is bool:
+        if isinstance(value, bool):
             self._encode_bool(value)
             return
-        if value_type is float:
+        if isinstance(value, float):
             self._encode_float(value)
             return
-        if value_type is bytes:
+        if isinstance(value, bytes):
             self._encode_bytes(value)
             return
-        if value_type is struct_time:
+        if isinstance(value, struct_time):
             self._encode_time(value)
             return
-        if value_type is list:
+        if isinstance(value, list):
             self._encode_list(value)
             return
-        if value_type is dict:
+        if isinstance(value, dict):
             self._encode_dict(value)
             return
-        raise TypeError("Invalid type for encode: {}".format(value_type))
+        raise TypeError("Invalid type for encode: {}".format(type(value)))
 
     def _encode_str(self, value, data_type=types.BINN_STRING):
         size = len(value.encode('utf8'))
@@ -137,15 +136,13 @@ class BINNEncoder(object):
 
         with BytesIO() as buffer:
             for key in value:
-                key_type = type(key)
-
-                if key_type is str:
+                if isinstance(key, str):
                     if len(key) > 255:
                         raise OverflowError("Key '{}' is to big. Max length is 255.".format(key))
                     buffer.write(pack('B', len(key)))
                     buffer.write(key.encode('utf8'))
                     buffer.write(BINNEncoder().encode_bytes(value[key]))
-                elif key_type is int:
+                elif isinstance(key, int):
                     container_type = types.BINN_MAP
                     buffer.write(pack('I', key))
                     buffer.write(BINNEncoder().encode_bytes(value[key]))
