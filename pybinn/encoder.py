@@ -157,6 +157,13 @@ class BINNEncoder(object):
                     container_type = types.BINN_MAP
                     buffer.write(pack('I', key))
                     buffer.write(BINNEncoder().encode_bytes(value[key]))
+                elif isinstance(key, bytes):
+                    if len(key) != types.PYBINN_MAP_SIZE:
+                        msg = "Bytes key should be exactly {} bytes length.".format(types.PYBINN_MAP_SIZE)
+                        raise OverflowError(msg)
+                    container_type = types.PYBINN_MAP
+                    buffer.write(key)
+                    buffer.write(BINNEncoder().encode_bytes(value[key]))
                 else:
                     msg = "Cannot serialize dictionary with key of type '{}'".format(type(key))
                     raise TypeError(msg)
@@ -185,7 +192,7 @@ class CustomEncoder(object):
     def __init__(self, usr_type, data_type):
         # if custom data type is not BINN type
         if data_type in types.ALL:
-            raise Exception("Data type {} is defined as BINN type.".format(data_type))
+            raise Exception("Data type {} is defined as internal type.".format(data_type))
 
         self.type = usr_type
         self.datatype = data_type

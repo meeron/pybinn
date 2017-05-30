@@ -8,7 +8,7 @@ BINN_MAP = b'\xe1'
 BINN_OBJECT = b'\xe2'
 
 BINN_STRING = b'\xa0'
-BINN_DATETIME = b'\xa1' # in DATETIME_FORMAT format
+BINN_DATETIME = b'\xa1'  # in DATETIME_FORMAT format
 
 BINN_BLOB = b'\xc0'
 
@@ -25,6 +25,10 @@ BINN_INT32 = b'\x61'
 BINN_UINT64 = b'\x80'
 BINN_INT64 = b'\x81'
 BINN_FLOAT64 = b'\x82'
+
+# Extended data formats
+PYBINN_MAP = b'\xb8'
+PYBINN_MAP_SIZE = 8
 
 ALL = (
     BINN_LIST,
@@ -44,5 +48,6 @@ ALL = (
     BINN_INT32,
     BINN_UINT64,
     BINN_INT64,
-    BINN_FLOAT64
+    BINN_FLOAT64,
+    PYBINN_MAP
 )

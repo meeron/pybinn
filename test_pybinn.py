@@ -51,11 +51,19 @@ class TestPyBinn:
             decoded_mock = pybinn.load(fp, MockObjDecoder())
             assert mock.name == decoded_mock.name
 
+    def test_dict_with_bytes_key(self):
+        test_dict = {
+            b'12345678': "this is test value"
+        }
+        assert test_dict == pybinn.loads(pybinn.dumps(test_dict))
+
+
 class MockObj:
-    DATATYPE = b'\xe3'
+    DATATYPE = b'\xf0'
 
     def __init__(self, name):
         self.name = name
+
 
 class MockObjEncoder(pybinn.CustomEncoder):
     def __init__(self):

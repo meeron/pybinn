@@ -46,7 +46,9 @@ class BINNDecoder(object):
             return self._decode_time()
         if binntype == types.BINN_LIST:
             return self._decode_list()
-        if binntype == types.BINN_OBJECT or binntype == types.BINN_MAP:
+        if binntype == types.BINN_OBJECT \
+                or binntype == types.BINN_MAP \
+                or binntype == types.PYBINN_MAP:
             return self._decode_dict(binntype)
         if binntype == types.BINN_TRUE:
             return True
@@ -61,7 +63,7 @@ class BINNDecoder(object):
             if binntype == decoder.datatype:
                 return self._decode_custom_type(decoder)
 
-        raise TypeError("Invalid BINN data format: {}".format(binntype))
+        raise TypeError("Invalid data format: {}".format(binntype))
 
     def _decode_str(self):
         size = self._from_varint()
@@ -100,6 +102,8 @@ class BINNDecoder(object):
                 key = self._buffer.read(key_size).decode('utf8')
             if binntype == types.BINN_MAP:
                 key = unpack('I', self._buffer.read(4))[0]
+            if binntype == types.PYBINN_MAP:
+                key = self._buffer.read(types.PYBINN_MAP_SIZE)
             result[key] = self.decode()
         return result
 
@@ -122,7 +126,7 @@ class CustomDecoder(object):
     def __init__(self, data_type):
         # check if custom data type is not BINN type
         if data_type in types.ALL:
-            raise Exception("Datatype {} is defined as BINN type.".format(data_type))
+            raise Exception("Data type {} is defined as internal type.".format(data_type))
 
         self.datatype = data_type
 
