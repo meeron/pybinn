@@ -6,6 +6,7 @@ from time import strptime
 
 import pybinn.datatypes as types
 
+
 class BINNDecoder(object):
     """BINN <https://github.com/liteserver/binn> decoder for Python"""
     
@@ -60,7 +61,7 @@ class BINNDecoder(object):
             if binntype == decoder.datatype:
                 return self._decode_custom_type(decoder)
 
-        raise TypeError("Invalid Binn data format: {}".format(binntype))
+        raise TypeError("Invalid BINN data format: {}".format(binntype))
 
     def _decode_str(self):
         size = self._from_varint()
@@ -114,15 +115,16 @@ class BINNDecoder(object):
             value &= 0x7FFFFFFF
         return value
 
+
 class CustomDecoder(object):
     """Base class for handling decoding user types"""
 
-    def __init__(self, datatype):
+    def __init__(self, data_type):
         # check if custom data type is not BINN type
-        if datatype in types.ALL:
-            raise Exception("Datatype {} is defined as BINN type.".format(datatype))
+        if data_type in types.ALL:
+            raise Exception("Datatype {} is defined as BINN type.".format(data_type))
 
-        self.datatype = datatype
+        self.datatype = data_type
 
     def getobject(self, data_bytes):
         """Decode object from bytes"""

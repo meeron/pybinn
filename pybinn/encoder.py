@@ -6,9 +6,10 @@ from time import struct_time, strftime
 
 import pybinn.datatypes as types
 
+
 class BINNEncoder(object):
     """BINN <https://github.com/liteserver/binn> encoder for Python"""
-    
+
     def __init__(self, fp=None, *custom_encoders):
         self._buffer = fp
         if not self._buffer:
@@ -136,8 +137,8 @@ class BINNEncoder(object):
                 buffer.write(BINNEncoder().encode_bytes(item))
 
             self._buffer.write(types.BINN_LIST)
-            self._buffer.write(self._to_varint(buffer.tell() + 3))
-            self._buffer.write(self._to_varint(len(value)))
+            self._buffer.write(BINNEncoder._to_varint(buffer.tell() + 3))
+            self._buffer.write(BINNEncoder._to_varint(len(value)))
             self._buffer.write(buffer.getvalue())
 
     def _encode_dict(self, value):
@@ -161,31 +162,33 @@ class BINNEncoder(object):
                     raise TypeError(msg)
 
             self._buffer.write(container_type)
-            self._buffer.write(self._to_varint(buffer.tell() + 3))
-            self._buffer.write(self._to_varint(len(value)))
+            self._buffer.write(BINNEncoder._to_varint(buffer.tell() + 3))
+            self._buffer.write(BINNEncoder._to_varint(len(value)))
             self._buffer.write(buffer.getvalue())
 
     def _encode_custom_type(self, value, encoder):
         data = encoder.getbytes(value)
         self._buffer.write(encoder.datatype)
-        self._buffer.write(self._to_varint(len(data)))
+        self._buffer.write(BINNEncoder._to_varint(len(data)))
         self._buffer.write(data)
-    
-    def _to_varint(self, value):
+
+    @staticmethod
+    def _to_varint(value):
         if value > 127:
             return pack('>I', value | 0x80000000)
         return pack('B', value)
 
+
 class CustomEncoder(object):
     """Base class for handling encoding user types"""
 
-    def __init__(self, usr_type, datatype):
+    def __init__(self, usr_type, data_type):
         # if custom data type is not BINN type
-        if datatype in types.ALL:
-            raise Exception("Datatype {} is defined as BINN type.".format(datatype))
+        if data_type in types.ALL:
+            raise Exception("Data type {} is defined as BINN type.".format(data_type))
 
         self.type = usr_type
-        self.datatype = datatype
+        self.datatype = data_type
 
     def getbytes(self, value):
         """Encode instance of custom type"""
