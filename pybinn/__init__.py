@@ -1,6 +1,6 @@
 """BINN (https://github.com/liteserver/binn) serialization/deserialization module"""
 
-__version__ = '0.9.2'
+__version__ = '0.9.3'
 __all__ = [
     'dumps', 'loads', 'dump', 'load',
     'BINNDecoder', 'BINNEncoder',
