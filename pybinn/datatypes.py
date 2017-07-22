@@ -8,7 +8,7 @@ BINN_MAP = b'\xe1'
 BINN_OBJECT = b'\xe2'
 
 BINN_STRING = b'\xa0'
-BINN_TIME = b'\xa1'  # in DATETIME_FORMAT format
+BINN_TIME = b'\xa1'  # Not used
 BINN_DATETIME = b'\xa2'
 
 BINN_BLOB = b'\xc0'

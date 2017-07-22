@@ -1,5 +1,5 @@
-from time import gmtime
-from datetime import  datetime
+from time import time
+from datetime import datetime
 from io import BytesIO
 
 import pybinn
@@ -11,7 +11,7 @@ class TestPyBinn:
         """Setup method"""
         self._test = [
             True, False, None,
-            gmtime(), datetime.now(),
+            time(), datetime.now(),
             0, 1, -1, 2, -2, 4, -4, 6, -6,
             0x10, -0x10, 0x20, -0x20, 0x40, -0x40,
             0x80, -0x80, 0x100, -0x100, 0x200, -0x100,

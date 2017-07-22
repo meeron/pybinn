@@ -2,7 +2,6 @@
 
 from io import BytesIO
 from struct import pack
-from time import struct_time, strftime
 from datetime import datetime
 
 import pybinn.datatypes as types
@@ -41,9 +40,6 @@ class BINNEncoder(object):
             return
         if isinstance(value, bytes):
             self._encode_bytes(value)
-            return
-        if isinstance(value, struct_time):
-            self._encode_time(value)
             return
         if isinstance(value, list):
             self._encode_list(value)
@@ -132,10 +128,6 @@ class BINNEncoder(object):
         self._buffer.write(types.BINN_BLOB)
         self._buffer.write(pack('I', len(value)))
         self._buffer.write(value)
-
-    def _encode_time(self, value):
-        time_str = strftime(types.DATETIME_FORMAT, value)
-        self._encode_str(time_str, types.BINN_TIME)
 
     def _encode_datetime(self, value):
         self._encode_float(value.timestamp(), types.BINN_DATETIME)

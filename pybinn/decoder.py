@@ -2,7 +2,6 @@
 
 import io
 from struct import unpack
-from time import strptime
 from datetime import datetime
 
 import pybinn.datatypes as types
@@ -78,12 +77,6 @@ class BINNDecoder(object):
     def _decode_bytes(self):
         size = unpack('I', self._buffer.read(4))[0]
         return self._buffer.read(size)
-
-    def _decode_time(self):
-        time_str = self._decode_str()
-        # decode time in UTC timezone
-        time_str += "+GMT"
-        return strptime(time_str, types.DATETIME_FORMAT + "+%Z")
 
     def _decode_datetime(self):
         timestamp = unpack('d', self._buffer.read(8))[0]
