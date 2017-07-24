@@ -130,7 +130,8 @@ class BINNEncoder(object):
         self._buffer.write(value)
 
     def _encode_datetime(self, value):
-        self._encode_float(value.timestamp(), types.BINN_DATETIME)
+        delta = value - datetime(1970, 1, 1)
+        self._encode_float(delta.total_seconds(), types.BINN_DATETIME)
 
     def _encode_list(self, value):
         with BytesIO() as buffer:

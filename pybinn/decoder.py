@@ -78,7 +78,7 @@ class BINNDecoder(object):
 
     def _decode_datetime(self):
         timestamp = unpack('d', self._buffer.read(8))[0]
-        return datetime.fromtimestamp(timestamp)
+        return datetime.utcfromtimestamp(timestamp)
 
     def _decode_list(self):
         # read container size

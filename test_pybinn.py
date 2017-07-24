@@ -4,6 +4,7 @@ from io import BytesIO
 
 import pybinn
 
+
 class TestPyBinn:
     """PyBinn tests"""
     
@@ -11,7 +12,7 @@ class TestPyBinn:
         """Setup method"""
         self._test = [
             True, False, None,
-            time(), datetime.now(),
+            time(), datetime.now(), datetime.utcnow(),
             0, 1, -1, 2, -2, 4, -4, 6, -6,
             0x10, -0x10, 0x20, -0x20, 0x40, -0x40,
             0x80, -0x80, 0x100, -0x100, 0x200, -0x100,
