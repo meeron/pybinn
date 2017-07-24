@@ -42,8 +42,6 @@ class BINNDecoder(object):
             return unpack('d', self._buffer.read(8))[0]
         if binntype == types.BINN_BLOB:
             return self._decode_bytes()
-        if binntype == types.BINN_TIME:
-            return self._decode_time()
         if binntype == types.BINN_DATETIME:
             return self._decode_datetime()
         if binntype == types.BINN_LIST:
