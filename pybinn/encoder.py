@@ -2,7 +2,7 @@
 
 from io import BytesIO
 from struct import pack
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pybinn.datatypes as types
 
@@ -130,8 +130,8 @@ class BINNEncoder(object):
         self._buffer.write(value)
 
     def _encode_datetime(self, value):
-        delta = value - datetime(1970, 1, 1)
-        self._encode_float(delta.total_seconds(), types.BINN_DATETIME)
+        timestamp = (value - datetime(1970, 1, 1)) / timedelta(seconds=1)
+        self._encode_float(timestamp, types.BINN_DATETIME)
 
     def _encode_list(self, value):
         with BytesIO() as buffer:
