@@ -2,7 +2,7 @@
 
 import io
 from struct import unpack
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pybinn.datatypes as types
 
@@ -77,9 +77,9 @@ class BINNDecoder(object):
         return self._buffer.read(size)
 
     def _decode_datetime(self):
-        timestamp = unpack('d', self._buffer.read(8))[0]
-        print("\ntimestamp2: ", timestamp)
-        return datetime.utcfromtimestamp(timestamp)
+        timestamp = float(unpack('d', self._buffer.read(8))[0])
+        # datetime.utcfromtimestamp method in python3.3 has rounding issue (https://bugs.python.org/issue23517)
+        return datetime(1970, 1, 1) + timedelta(seconds=timestamp)
 
     def _decode_list(self):
         # read container size
