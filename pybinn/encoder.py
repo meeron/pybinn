@@ -131,6 +131,7 @@ class BINNEncoder(object):
 
     def _encode_datetime(self, value):
         timestamp = (value - datetime(1970, 1, 1)) / timedelta(seconds=1)
+        print("\ntimestamp1: ", timestamp)
         self._encode_float(timestamp, types.BINN_DATETIME)
 
     def _encode_list(self, value):
