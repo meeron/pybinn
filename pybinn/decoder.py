@@ -34,12 +34,14 @@ class BINNDecoder(object):
             return unpack('I', self._buffer.read(4))[0]
         if binntype == types.BINN_INT32:
             return unpack('i', self._buffer.read(4))[0]
+        if binntype == types.BINN_FLOAT32:
+            return unpack('f', self._buffer.read(4))[0]
         if binntype == types.BINN_UINT64:
             return unpack('L', self._buffer.read(8))[0]
         if binntype == types.BINN_INT64:
             return unpack('l', self._buffer.read(8))[0]
         if binntype == types.BINN_FLOAT64:
-            return unpack('d', self._buffer.read(8))[0]
+            return unpack('>d', self._buffer.read(8))[0]
         if binntype == types.BINN_BLOB:
             return self._decode_bytes()
         if binntype == types.BINN_DATETIME:
