@@ -20,7 +20,7 @@ print(data)
 Decoding
 
 ```python
-data = b'\xe2\x16\x02\x02id \x0c\x05hello\xa0\x05world\x00'
+data = b'\xe2\x16\x02\x02id \x0c\x05hello\xa0\x05world\x00 '
 obj = pybinn.loads(data)
 print(obj)
 # {'id': 12, 'hello': 'world'}
