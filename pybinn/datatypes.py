@@ -25,6 +25,7 @@ BINN_UINT32 = b'\x60'
 BINN_INT32 = b'\x61'
 BINN_UINT64 = b'\x80'
 BINN_INT64 = b'\x81'
+BINN_FLOAT32 = b'\x62'
 BINN_FLOAT64 = b'\x82'
 
 # Extended data formats
@@ -49,6 +50,7 @@ ALL = (
     BINN_INT32,
     BINN_UINT64,
     BINN_INT64,
+    BINN_FLOAT32,
     BINN_FLOAT64,
     PYBINN_MAP
 )
