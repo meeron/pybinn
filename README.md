@@ -1,7 +1,5 @@
 pybinn
 ======
-[![Build Status](https://api.travis-ci.org/meeron/pybinn.svg?branch=master)](https://travis-ci.org/meeron/pybinn)
-
 Python wrapper for BINN serialization (https://github.com/liteserver/binn)
 
 Usage

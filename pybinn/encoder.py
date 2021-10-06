@@ -4,6 +4,7 @@ from io import BytesIO
 from struct import pack
 from datetime import datetime, timedelta
 
+import pybinn
 import pybinn.datatypes as types
 
 
@@ -52,7 +53,7 @@ class BINNEncoder(object):
             return
         # try use custom encoders when none type was recognized
         for encoder in self._custom_encoders:
-            if not issubclass(type(encoder), CustomEncoder):
+            if not issubclass(type(encoder), pybinn.CustomEncoder):
                 raise TypeError("Type {} is not CustomerEncoder.".format(type(encoder)))
             if isinstance(value, encoder.type):
                 self._encode_custom_type(value, encoder)
@@ -85,7 +86,7 @@ class BINNEncoder(object):
         # unsigned long
         if value < 0x10000000000000000:
             self._buffer.write(types.BINN_UINT64)
-            self._buffer.write(pack('L', value))
+            self._buffer.write(pack('Q', value))
             return
         raise OverflowError("Value to big {}.".format(hex(value)))
 
@@ -110,7 +111,7 @@ class BINNEncoder(object):
         # long
         if value >= -0x8000000000000000:
             self._buffer.write(types.BINN_INT64)
-            self._buffer.write(pack('l', value))
+            self._buffer.write(pack('q', value))
 
     def _encode_bool(self, value):
         if value:
