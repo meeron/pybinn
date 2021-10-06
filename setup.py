@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name="pybinn",
-      version="0.9.4",
+      version="0.9.6",
       description="Python 3.x wrapper for BINN serialization format",
       author="Miron Jakubowski",
       author_email="mijakubowski@gmail.com",
