@@ -23,25 +23,25 @@ class BINNDecoder(object):
         if binntype == types.BINN_STRING:
             return self._decode_str()
         if binntype == types.BINN_UINT8:
-            return unpack('B', self._buffer.read(1))[0]
+            return unpack('!B', self._buffer.read(1))[0]
         if binntype == types.BINN_INT8:
-            return unpack('b', self._buffer.read(1))[0]
+            return unpack('!b', self._buffer.read(1))[0]
         if binntype == types.BINN_UINT16:
-            return unpack('H', self._buffer.read(2))[0]
+            return unpack('!H', self._buffer.read(2))[0]
         if binntype == types.BINN_INT16:
-            return unpack('h', self._buffer.read(2))[0]
+            return unpack('!h', self._buffer.read(2))[0]
         if binntype == types.BINN_UINT32:
-            return unpack('I', self._buffer.read(4))[0]
+            return unpack('!I', self._buffer.read(4))[0]
         if binntype == types.BINN_INT32:
-            return unpack('i', self._buffer.read(4))[0]
+            return unpack('!i', self._buffer.read(4))[0]
         if binntype == types.BINN_FLOAT32:
-            return unpack('f', self._buffer.read(4))[0]
+            return unpack('!f', self._buffer.read(4))[0]
         if binntype == types.BINN_UINT64:
-            return unpack('Q', self._buffer.read(8))[0]
+            return unpack('!Q', self._buffer.read(8))[0]
         if binntype == types.BINN_INT64:
-            return unpack('q', self._buffer.read(8))[0]
+            return unpack('!q', self._buffer.read(8))[0]
         if binntype == types.BINN_FLOAT64:
-            return unpack('d', self._buffer.read(8))[0]
+            return unpack('!d', self._buffer.read(8))[0]
         if binntype == types.BINN_BLOB:
             return self._decode_bytes()
         if binntype == types.BINN_DATETIME:
@@ -75,11 +75,11 @@ class BINNDecoder(object):
         return value
 
     def _decode_bytes(self):
-        size = unpack('I', self._buffer.read(4))[0]
+        size = unpack('!I', self._buffer.read(4))[0]
         return self._buffer.read(size)
 
     def _decode_datetime(self):
-        timestamp = float(unpack('d', self._buffer.read(8))[0])
+        timestamp = float(unpack('!d', self._buffer.read(8))[0])
         # datetime.utcfromtimestamp method in python3.3 has rounding issue (https://bugs.python.org/issue23517)
         return datetime(1970, 1, 1) + timedelta(seconds=timestamp)
 
@@ -99,10 +99,10 @@ class BINNDecoder(object):
         result = {}
         for i in range(count):
             if binntype == types.BINN_OBJECT:
-                key_size = unpack('B', self._buffer.read(1))[0]
+                key_size = unpack('!B', self._buffer.read(1))[0]
                 key = self._buffer.read(key_size).decode('utf8')
             if binntype == types.BINN_MAP:
-                key = unpack('I', self._buffer.read(4))[0]
+                key = unpack('!I', self._buffer.read(4))[0]
             if binntype == types.PYBINN_MAP:
                 key = self._buffer.read(types.PYBINN_MAP_SIZE)
             result[key] = self.decode()
@@ -113,10 +113,10 @@ class BINNDecoder(object):
         return decoder.getobject(self._buffer.read(size))
 
     def _from_varint(self):
-        value = unpack('B', self._buffer.read(1))[0]
+        value = unpack('!B', self._buffer.read(1))[0]
         if value & 0x80:
             self._buffer.seek(self._buffer.tell() - 1)
-            value = unpack('>I', self._buffer.read(4))[0]
+            value = unpack('!I', self._buffer.read(4))[0]
             value &= 0x7FFFFFFF
         return value
 

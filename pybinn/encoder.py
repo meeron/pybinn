@@ -71,22 +71,22 @@ class BINNEncoder(object):
         # unsigned char (byte)
         if value < 0x100:
             self._buffer.write(types.BINN_UINT8)
-            self._buffer.write(pack('B', value))
+            self._buffer.write(pack('!B', value))
             return
         # unsigned short
         if value < 0x10000:
             self._buffer.write(types.BINN_UINT16)
-            self._buffer.write(pack('H', value))
+            self._buffer.write(pack('!H', value))
             return
         # unsigned int
         if value < 0x100000000:
             self._buffer.write(types.BINN_UINT32)
-            self._buffer.write(pack('I', value))
+            self._buffer.write(pack('!I', value))
             return
         # unsigned long
         if value < 0x10000000000000000:
             self._buffer.write(types.BINN_UINT64)
-            self._buffer.write(pack('Q', value))
+            self._buffer.write(pack('!Q', value))
             return
         raise OverflowError("Value to big {}.".format(hex(value)))
 
@@ -96,22 +96,22 @@ class BINNEncoder(object):
         # signed char
         if value >= -0x80:
             self._buffer.write(types.BINN_INT8)
-            self._buffer.write(pack('b', value))
+            self._buffer.write(pack('!b', value))
             return
         # short
         if value >= -0x8000:
             self._buffer.write(types.BINN_INT16)
-            self._buffer.write(pack('h', value))
+            self._buffer.write(pack('!h', value))
             return
         # int
         if value >= -0x80000000:
             self._buffer.write(types.BINN_INT32)
-            self._buffer.write(pack('i', value))
+            self._buffer.write(pack('!i', value))
             return
         # long
         if value >= -0x8000000000000000:
             self._buffer.write(types.BINN_INT64)
-            self._buffer.write(pack('q', value))
+            self._buffer.write(pack('!q', value))
 
     def _encode_bool(self, value):
         if value:
@@ -123,11 +123,11 @@ class BINNEncoder(object):
         if binn_type is None:
             binn_type = types.BINN_FLOAT64
         self._buffer.write(binn_type)
-        self._buffer.write(pack('d', value))
+        self._buffer.write(pack('!d', value))
 
     def _encode_bytes(self, value):
         self._buffer.write(types.BINN_BLOB)
-        self._buffer.write(pack('I', len(value)))
+        self._buffer.write(pack('!I', len(value)))
         self._buffer.write(value)
 
     def _encode_datetime(self, value):
@@ -153,12 +153,12 @@ class BINNEncoder(object):
                 if isinstance(key, str):
                     if len(key) > 255:
                         raise OverflowError("Key '{}' is to big. Max length is 255.".format(key))
-                    buffer.write(pack('B', len(key)))
+                    buffer.write(pack('!B', len(key)))
                     buffer.write(key.encode('utf8'))
                     buffer.write(BINNEncoder().encode_bytes(value[key]))
                 elif isinstance(key, int):
                     container_type = types.BINN_MAP
-                    buffer.write(pack('I', key))
+                    buffer.write(pack('!I', key))
                     buffer.write(BINNEncoder().encode_bytes(value[key]))
                 elif isinstance(key, bytes):
                     if len(key) != types.PYBINN_MAP_SIZE:
@@ -185,8 +185,8 @@ class BINNEncoder(object):
     @staticmethod
     def _to_varint(value):
         if value > 127:
-            return pack('>I', value | 0x80000000)
-        return pack('B', value)
+            return pack('!I', value | 0x80000000)
+        return pack('!B', value)
 
 
 class CustomEncoder(object):
